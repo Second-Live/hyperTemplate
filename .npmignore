@@ -1,0 +1,14 @@
+coverage/*
+esm/.eslintrc
+logo/*
+node_modules/*
+test/*
+_config.yml
+.DS_Store
+.gitignore
+.travis.yml
+.github/ISSUE_TEMPLATE.md
+babel-plugins.json
+CHANGELOG.md
+package-lock.json
+rollup.config.js

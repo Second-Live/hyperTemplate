@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Edge test</title>
+    <script>document.write('<script src="../index.js?_=' + Math.random() + '"><' + '/script>')</script>
+    <script>
+this.onload = function () {
+  hyperHTML.bind(document.body)(['<textarea rows="3" value="', '"/>'], null);
+};
+    </script>
+  </head>
+  <body></body>
+</html>

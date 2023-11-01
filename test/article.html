@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>body { font-family: sans-serif; }</style>
+    <script src="../min.js"></script>
+  </head>
+  <body><article></article></body>
+  <script>
+
+  function update(render, state) {
+    render`
+    <article data-magic="${state.magic}">
+      <h3>${state.title}</h3>
+      List of ${state.paragraphs.length} paragraphs:
+      <ul>
+        ${state.paragraphs.map(
+          p => hyperHTML.wire(p)`
+          <li> ${p.title} </li>`)}
+      </ul>
+    </article>
+    `;
+  }
+
+  const articleElement = document.querySelector('article');
+  const state = {
+    title: 'True story',
+    magic: true,
+    paragraphs: [
+      {title: 'touching'},
+      {title: 'incredible'},
+      {title: 'doge'}
+    ]
+  };
+  const render = hyperHTML.bind(articleElement);
+  update(render, state);
+  </script>
+</html>

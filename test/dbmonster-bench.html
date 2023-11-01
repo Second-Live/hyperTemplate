@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="dbmonster.css">
+    <script src="https://unpkg.com/perf-monitor@0.3.0/dist/umd/perf-monitor.js"></script>
+    <script src="../min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      var
+        // retrieve a wire or create one, based on lists of data
+        // necessary if you have JSON data to deal with
+        // since weak reference won't bring in any benefit
+        render = (arr, i) => arr[i] || (arr[i] = hyperHTML.wire()),
+
+        // list of all known renders
+        renderTABLE = hyperHTML.bind(document.querySelector('#app')),
+        TRs = [],
+        mutations = 100
+      ;
+
+      function updateTable(dbs) {
+        renderTABLE`
+        <table class="table table-striped latest-data">
+          <tbody>${dbs.map((db, i) => render(TRs, i)`
+            <tr key="${db.dbname}">
+              <td class="dbname">
+                ${db.dbname}
+              </td>
+              <td class="query-count">
+                <span class="${db.lastSample.countClassName}">
+                  ${db.lastSample.nbQueries}
+                </span>
+              </td>
+              <td class="${db.lastSample.topFiveQueries[0].elapsedClassName}">
+                <span class="foo">
+                  ${db.lastSample.topFiveQueries[0].formatElapsed}
+                </span>
+                <div class="popover left">
+                  <div class="popover-content">
+                    ${db.lastSample.topFiveQueries[0].query}
+                  </div>
+                  <div class="arrow"></div>
+                </div>
+              </td>
+              <td class="${db.lastSample.topFiveQueries[1].elapsedClassName}">
+                <span class="foo">
+                  ${db.lastSample.topFiveQueries[1].formatElapsed}
+                </span>
+                <div class="popover left">
+                  <div class="popover-content">
+                    ${db.lastSample.topFiveQueries[1].query}
+                  </div>
+                  <div class="arrow"></div>
+                </div>
+              </td>
+              <td class="${db.lastSample.topFiveQueries[2].elapsedClassName}">
+                <span class="foo">
+                  ${db.lastSample.topFiveQueries[2].formatElapsed}
+                </span>
+                <div class="popover left">
+                  <div class="popover-content">
+                    ${db.lastSample.topFiveQueries[2].query}
+                  </div>
+                  <div class="arrow"></div>
+                </div>
+              </td>
+              <td class="${db.lastSample.topFiveQueries[3].elapsedClassName}">
+                <span class="foo">
+                  ${db.lastSample.topFiveQueries[3].formatElapsed}
+                </span>
+                <div class="popover left">
+                  <div class="popover-content">
+                    ${db.lastSample.topFiveQueries[3].query}
+                  </div>
+                  <div class="arrow"></div>
+                </div>
+              </td>
+              <td class="${db.lastSample.topFiveQueries[4].elapsedClassName}">
+                <span class="foo">
+                  ${db.lastSample.topFiveQueries[4].formatElapsed}
+                </span>
+                <div class="popover left">
+                  <div class="popover-content">
+                    ${db.lastSample.topFiveQueries[4].query}
+                  </div>
+                  <div class="arrow"></div>
+                </div>
+              </td>
+             </tr>`
+          )}</tbody>
+        </table>`;
+      }
+
+      updateTable(ENV.generateData().toArray());
+
+      perfMonitor.startFPSMonitor();
+      perfMonitor.startMemMonitor();
+      perfMonitor.initProfiler('view update');
+
+      function update() {
+        requestAnimationFrame(update);
+        perfMonitor.startProfile('view update');
+        updateTable(ENV.generateData().toArray());
+        perfMonitor.endProfile('view update');
+      }
+
+      requestAnimationFrame(update);
+
+    }, {once: true});
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="link">
+      You're looking at hyperHTML<br>
+      version of <a href="https://dbmonster.firebaseapp.com/">DBMonster</a>.
+    </div>
+  </body>
+  <script src="./dbmonster.js"></script>
+</html>
