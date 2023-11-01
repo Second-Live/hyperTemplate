@@ -11,10 +11,8 @@ import {
 } from '../shared/constants.js';
 
 import { isArray, createContent } from '../shared/utils.js';
-import Component from '../classes/Component.js';
 import Intent from './Intent.js';
 
-const componentType = Component.prototype.nodeType;
 const wireType = Wire.prototype.nodeType;
 
 const observe = disconnected({Event: CustomEvent, WeakSet});
@@ -24,7 +22,7 @@ export {Tagger, observe};
 // returns an intent to explicitly inject content as html
 const asHTML = html => ({html});
 
-// returns nodes from wires and components
+// returns nodes from wires
 const asNode = (item, i) => {
   switch (item.nodeType) {
     case wireType:
@@ -35,8 +33,6 @@ const asNode = (item, i) => {
       return (1 / i) < 0 ?
         (i ? item.remove(true) : item.lastChild) :
         (i ? item.valueOf(true) : item.firstChild);
-    case componentType:
-      return asNode(item.render(), i);
     default:
       return item;
   }

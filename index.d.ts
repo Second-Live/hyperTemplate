@@ -2,17 +2,6 @@ type TemplateFunction<T> = (template: TemplateStringsArray, ...values: any[]) =>
 export type BoundTemplateFunction<T extends Element | ShadowRoot> = TemplateFunction<T>;
 export type WiredTemplateFunction = TemplateFunction<any>;
 
-export declare class Component<T = {}> {
-  static for<TComponent>(this: new() => TComponent, context: object, identity?: any): TComponent;
-  handleEvent(e: Event): void;
-  html: WiredTemplateFunction;
-  svg: WiredTemplateFunction;
-  state: T;
-  get defaultState(): T;
-  setState(state: Partial<T> | ((this: this, state: T) => Partial<T>), render?: boolean): this;
-  dispatch(type: string, detail?: any): boolean;
-}
-
 export declare function bind<T extends Element | ShadowRoot>(element: T): BoundTemplateFunction<T>;
 
 export declare function define(intent: string, callback: Function): void;
@@ -21,7 +10,6 @@ export declare function wire(identity?: object | null, type?: 'html' | 'svg'): W
 export declare function wire(identity?: object | null, type_id?: string): WiredTemplateFunction;
 
 export declare const hyper: {
-  Component: typeof Component;
   bind: typeof bind;
   define: typeof define;
   hyper: typeof hyper;

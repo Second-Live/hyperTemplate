@@ -1,5 +1,4 @@
 import diff from 'domdiff';
-import Component, {setup} from './classes/Component.js';
 import Intent from './objects/Intent.js';
 import {observe, Tagger} from './objects/Updates.js';
 import wire, {content, weakly} from './hyper/wire.js';
@@ -13,7 +12,6 @@ const bind = context => render.bind(context);
 const define = Intent.define;
 const tagger = Tagger.prototype;
 
-hyper.Component = Component;
 hyper.bind = bind;
 hyper.define = define;
 hyper.diff = diff;
@@ -22,13 +20,9 @@ hyper.observe = observe;
 hyper.tagger = tagger;
 hyper.wire = wire;
 
-// the wire content is the lazy defined
-// html or svg property of each hyper.Component
-setup(content);
-
 // everything is exported directly or through the
 // hyperHTML callback, when used as top level script
-export {Component, bind, define, diff, hyper, observe, tagger, wire};
+export {bind, define, diff, hyper, observe, tagger, wire};
 
 // by default, hyperHTML is a smart function
 // that "magically" understands what's the best

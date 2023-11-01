@@ -1,7 +1,5 @@
 'use strict';
 const diff = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('domdiff'));
-const Component = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('./classes/Component.js'));
-const {setup} = require('./classes/Component.js');
 const Intent = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('./objects/Intent.js'));
 const {observe, Tagger} = require('./objects/Updates.js');
 const wire = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('./hyper/wire.js'));
@@ -16,7 +14,6 @@ const bind = context => render.bind(context);
 const define = Intent.define;
 const tagger = Tagger.prototype;
 
-hyper.Component = Component;
 hyper.bind = bind;
 hyper.define = define;
 hyper.diff = diff;
@@ -25,13 +22,8 @@ hyper.observe = observe;
 hyper.tagger = tagger;
 hyper.wire = wire;
 
-// the wire content is the lazy defined
-// html or svg property of each hyper.Component
-setup(content);
-
 // everything is exported directly or through the
 // hyperHTML callback, when used as top level script
-exports.Component = Component;
 exports.bind = bind;
 exports.define = define;
 exports.diff = diff;

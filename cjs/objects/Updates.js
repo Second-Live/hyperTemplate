@@ -10,10 +10,8 @@ const {
 } = require('../shared/constants.js');
 
 const { isArray, createContent } = require('../shared/utils.js');
-const Component = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('../classes/Component.js'));
 const Intent = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('./Intent.js'));
 
-const componentType = Component.prototype.nodeType;
 const wireType = Wire.prototype.nodeType;
 
 const observe = disconnected({Event: CustomEvent, WeakSet});
@@ -24,7 +22,7 @@ exports.observe = observe;
 // returns an intent to explicitly inject content as html
 const asHTML = html => ({html});
 
-// returns nodes from wires and components
+// returns nodes from wires
 const asNode = (item, i) => {
   switch (item.nodeType) {
     case wireType:
@@ -35,8 +33,6 @@ const asNode = (item, i) => {
       return (1 / i) < 0 ?
         (i ? item.remove(true) : item.lastChild) :
         (i ? item.valueOf(true) : item.firstChild);
-    case componentType:
-      return asNode(item.render(), i);
     default:
       return item;
   }
