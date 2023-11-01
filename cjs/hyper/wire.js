@@ -1,8 +1,5 @@
 'use strict';
-const WeakMap = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/weakmap'));
-const tta = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/template-tag-arguments'));
-
-const Wire = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('hyperhtml-wire'));
+const Wire = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('hyperhtml-wire'));
 
 const {Tagger} = require('../objects/Updates.js');
 
@@ -30,8 +27,7 @@ const wire = (obj, type) => obj == null ?
 // in charge of updating its content like a bound element would do.
 const content = type => {
   let wire, tagger, template;
-  return function () {
-    const args = tta.apply(null, arguments);
+  return function (...args) {
     if (template !== args[0]) {
       template = args[0];
       tagger = new Tagger(type);

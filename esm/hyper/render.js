@@ -1,6 +1,3 @@
-import WeakMap from '@ungap/weakmap';
-import tta from '@ungap/template-tag-arguments';
-
 import {OWNER_SVG_ELEMENT} from '../shared/constants.js';
 import {Tagger} from '../objects/Updates.js';
 
@@ -12,9 +9,8 @@ const bewitched = new WeakMap;
 // the main tag function in charge of fully upgrading
 // or simply updating, contexts used as hyperHTML targets.
 // The `this` context is either a regular DOM node or a fragment.
-function render() {
+function render(...args) {
   const wicked = bewitched.get(this);
-  const args = tta.apply(null, arguments);
   if (wicked && wicked.template === args[0]) {
     wicked.tagger.apply(null, args);
   } else {

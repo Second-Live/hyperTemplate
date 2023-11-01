@@ -1,7 +1,4 @@
 'use strict';
-const WeakMap = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/weakmap'));
-const tta = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('@ungap/template-tag-arguments'));
-
 const {OWNER_SVG_ELEMENT} = require('../shared/constants.js');
 const {Tagger} = require('../objects/Updates.js');
 
@@ -13,9 +10,8 @@ const bewitched = new WeakMap;
 // the main tag function in charge of fully upgrading
 // or simply updating, contexts used as hyperHTML targets.
 // The `this` context is either a regular DOM node or a fragment.
-function render() {
+function render(...args) {
   const wicked = bewitched.get(this);
-  const args = tta.apply(null, arguments);
   if (wicked && wicked.template === args[0]) {
     wicked.tagger.apply(null, args);
   } else {

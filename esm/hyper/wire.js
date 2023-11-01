@@ -1,6 +1,3 @@
-import WeakMap from '@ungap/weakmap';
-import tta from '@ungap/template-tag-arguments';
-
 import Wire from 'hyperhtml-wire';
 
 import {Tagger} from '../objects/Updates.js';
@@ -29,8 +26,7 @@ const wire = (obj, type) => obj == null ?
 // in charge of updating its content like a bound element would do.
 const content = type => {
   let wire, tagger, template;
-  return function () {
-    const args = tta.apply(null, arguments);
+  return function (...args) {
     if (template !== args[0]) {
       template = args[0];
       tagger = new Tagger(type);
