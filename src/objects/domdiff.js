@@ -125,6 +125,7 @@ export default (parentNode, a, b, get, before) => {
       // that only the live list index should be forwarded
       else if (parentNode === a[aStart].parentNode)
         get(a[aStart++], -1).remove();
+      else aStart++;
     }
   }
   return b;

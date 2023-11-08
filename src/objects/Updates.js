@@ -30,7 +30,7 @@ const asNode = (item, i) => {
     /* istanbul ignore next */
     return 1 / i < 0
       ? i
-        ? item
+        ? item.remove()
         : item.lastChild
       : i
       ? item.valueOf()

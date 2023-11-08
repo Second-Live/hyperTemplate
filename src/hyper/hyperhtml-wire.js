@@ -1,12 +1,12 @@
+import { createDocumentFragment, createRange } from "../shared/utils.js";
+
 export const wireType = 111;
 
 export class Wire {
   ELEMENT_NODE = 1;
   nodeType = wireType;
-  _ = null;
 
   constructor(childNodes) {
-    this.parentNode = childNodes[0].parentNode;
     this.childNodes = [...childNodes];
   }
 
@@ -18,21 +18,17 @@ export class Wire {
     return this.childNodes[this.childNodes.length - 1];
   }
 
-  get ownerDocument() {
-    return this.firstChild.ownerDocument;
-  }
-
   remove() {
-    this._ = null;
-    this.parentNode.replaceChildren();
+    const range = createRange();
+    range.setStartAfter(this.firstChild);
+    range.setEndAfter(this.lastChild);
+    range.deleteContents();
+    return this.firstChild;
   }
 
   valueOf() {
-    let fragment = this._;
-    if (fragment === null) {
-      fragment = this._ = this.ownerDocument.createDocumentFragment();
-    }
-    fragment.replaceChildren(...this.childNodes);
+    const fragment = createDocumentFragment();
+    fragment.append(...this.childNodes);
     return fragment;
   }
 }
