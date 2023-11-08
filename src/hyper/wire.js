@@ -1,9 +1,9 @@
-import Wire from 'hyperhtml-wire';
+import Wire from "./hyperhtml-wire.js";
 
-import {Tagger} from '../objects/Updates.js';
+import { Tagger } from "../objects/Updates.js";
 
 // all wires used per each context
-const wires = new WeakMap;
+const wires = new WeakMap();
 
 // A wire is a callback used as tag function
 // to lazily relate a generic object to a template literal.
@@ -14,9 +14,8 @@ const wires = new WeakMap;
 // via html:id or :id convention. Such :id allows same JS objects
 // to be associated to different DOM structures accordingly with
 // the used template literal without losing previously rendered parts.
-const wire = (obj, type) => obj == null ?
-  content(type || 'html') :
-  weakly(obj, type || 'html');
+const wire = (obj, type) =>
+  obj == null ? content(type || "html") : weakly(obj, type || "html");
 
 // A wire content is a virtual reference to one or more nodes.
 // It's represented by either a DOM node, or an Array.
@@ -24,7 +23,7 @@ const wire = (obj, type) => obj == null ?
 // all nodes through the list of related callbacks.
 // In few words, a wire content is like an invisible parent node
 // in charge of updating its content like a bound element would do.
-const content = type => {
+const content = (type) => {
   let wire, tagger, template;
   return function (...args) {
     if (template !== args[0]) {
@@ -42,19 +41,18 @@ const content = type => {
 // Each object can have multiple wires associated
 // and this is thanks to the type + :id feature.
 const weakly = (obj, type) => {
-  const i = type.indexOf(':');
+  const i = type.indexOf(":");
   let wire = wires.get(obj);
   let id = type;
   if (-1 < i) {
     id = type.slice(i + 1);
-    type = type.slice(0, i) || 'html';
+    type = type.slice(0, i) || "html";
   }
-  if (!wire)
-    wires.set(obj, wire = {});
+  if (!wire) wires.set(obj, (wire = {}));
   return wire[id] || (wire[id] = content(type));
 };
 
-// A document fragment loses its nodes 
+// A document fragment loses its nodes
 // as soon as it is appended into another node.
 // This has the undesired effect of losing wired content
 // on a second render call, because (by then) the fragment would be empty:
@@ -66,12 +64,10 @@ const weakly = (obj, type) => {
 // wire content throughout multiple renderings.
 // The initial fragment, at this point, would be used as unique reference to this
 // array of nodes or to this single referenced node.
-const wireContent = node => {
+const wireContent = (node) => {
   const childNodes = node.childNodes;
-  const {length} = childNodes;
-  return length === 1 ?
-    childNodes[0] :
-    (length ? new Wire(childNodes) : node);
+  const { length } = childNodes;
+  return length === 1 ? childNodes[0] : length ? new Wire(childNodes) : node;
 };
 
 export { content, weakly };

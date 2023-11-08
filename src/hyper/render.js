@@ -1,9 +1,9 @@
-import {OWNER_SVG_ELEMENT} from '../shared/constants.js';
-import {Tagger} from '../objects/Updates.js';
+import { OWNER_SVG_ELEMENT } from "../shared/constants.js";
+import { Tagger } from "../objects/Updates.js";
 
 // a weak collection of contexts that
 // are already known to hyperHTML
-const bewitched = new WeakMap;
+const bewitched = new WeakMap();
 
 // better known as hyper.bind(node), the render is
 // the main tag function in charge of fully upgrading
@@ -24,10 +24,10 @@ function render(...args) {
 // as single DOM callbacks, relate such template
 // to the current context, and render it after cleaning the context up
 function upgrade(template) {
-  const type = OWNER_SVG_ELEMENT in this ? 'svg' : 'html';
+  const type = OWNER_SVG_ELEMENT in this ? "svg" : "html";
   const tagger = new Tagger(type);
-  bewitched.set(this, {tagger, template: template});
-  this.textContent = '';
+  bewitched.set(this, { tagger, template: template });
+  this.textContent = "";
   this.appendChild(tagger.apply(null, arguments));
 }
 

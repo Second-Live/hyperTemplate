@@ -437,8 +437,6 @@ describe("hyper", function () {
       "http://www.w3.org/2000/svg",
       "svg"
     );
-    if (!("ownerSVGElement" in svgContainer))
-      svgContainer.ownerSVGElement = null;
     hyperHTML.bind(svgContainer)`<rect x="1" y="2" />`;
     result = hyperHTML.wire(null, "svg")`<svg></svg>`;
     expect(

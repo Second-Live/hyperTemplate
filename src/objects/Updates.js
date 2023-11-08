@@ -1,10 +1,8 @@
-import disconnected from "disconnected";
-import domdiffPKG from "domdiff";
-const domdiff = domdiffPKG.default || domdiffPKG;
-import domtaggerPKG from "domtagger";
-const domtagger = domtaggerPKG.default || domtaggerPKG;
-import hyperStyle from "hyperhtml-style";
-import Wire from "hyperhtml-wire";
+import disconnected from "./disconnected.js";
+import domdiff from "./domdiff.js";
+import domtagger from "./domtagger.js";
+import hyperStyle from "./hyperhtml-style.js";
+import Wire from "../hyper/hyperhtml-wire.js";
 
 import {
   CONNECTED,
@@ -18,7 +16,7 @@ import Intent from "./Intent.js";
 
 const wireType = Wire.prototype.nodeType;
 
-const observe = disconnected({ Event: CustomEvent, WeakSet });
+const observe = disconnected();
 
 export { Tagger, observe };
 

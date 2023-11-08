@@ -40,13 +40,6 @@
     "mocha": "^10.2.0",
     "rollup": "4.2.0"
   },
-  "dependencies": {
-    "disconnected": "0.2.1",
-    "domdiff": "2.2.2",
-    "domtagger": "0.7.2",
-    "hyperhtml-style": "0.1.3",
-    "hyperhtml-wire": "2.1.1"
-  },
   "mocha": {
     "ui": "bdd",
     "require": "test/hooks.js"
