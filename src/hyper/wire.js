@@ -1,4 +1,4 @@
-import Wire from "./hyperhtml-wire.js";
+import { Wire } from "./hyperhtml-wire.js";
 
 import { Tagger } from "../objects/Updates.js";
 
@@ -14,8 +14,8 @@ const wires = new WeakMap();
 // via html:id or :id convention. Such :id allows same JS objects
 // to be associated to different DOM structures accordingly with
 // the used template literal without losing previously rendered parts.
-const wire = (obj, type) =>
-  obj == null ? content(type || "html") : weakly(obj, type || "html");
+const wire = (obj, type = "html") =>
+  obj == null ? content(type) : weakly(obj, type);
 
 // A wire content is a virtual reference to one or more nodes.
 // It's represented by either a DOM node, or an Array.

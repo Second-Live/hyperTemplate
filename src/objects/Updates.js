@@ -2,7 +2,7 @@ import disconnected from "./disconnected.js";
 import domdiff from "./domdiff.js";
 import domtagger from "./domtagger.js";
 import hyperStyle from "./hyperhtml-style.js";
-import Wire from "../hyper/hyperhtml-wire.js";
+import { wireType } from "../hyper/hyperhtml-wire.js";
 
 import {
   CONNECTED,
@@ -14,8 +14,6 @@ import {
 import { isArray, createContent } from "../shared/utils.js";
 import Intent from "./Intent.js";
 
-const wireType = Wire.prototype.nodeType;
-
 const observe = disconnected();
 
 export { Tagger, observe };
@@ -25,22 +23,20 @@ const asHTML = (html) => ({ html });
 
 // returns nodes from wires
 const asNode = (item, i) => {
-  switch (item.nodeType) {
-    case wireType:
-      // in the Wire case, the content can be
-      // removed, post-pended, inserted, or pre-pended and
-      // all these cases are handled by domdiff already
-      /* istanbul ignore next */
-      return 1 / i < 0
-        ? i
-          ? item.remove(true)
-          : item.lastChild
-        : i
-        ? item.valueOf(true)
-        : item.firstChild;
-    default:
-      return item;
+  if (item.nodeType === wireType) {
+    // in the Wire case, the content can be
+    // removed, post-pended, inserted, or pre-pended and
+    // all these cases are handled by domdiff already
+    /* istanbul ignore next */
+    return 1 / i < 0
+      ? i
+        ? item
+        : item.lastChild
+      : i
+      ? item.valueOf()
+      : item.firstChild;
   }
+  return item;
 };
 
 // returns true if domdiff can handle the value
@@ -227,7 +223,8 @@ Tagger.prototype = {
               node.parentNode,
               childNodes,
               [text(node, value)],
-              diffOptions
+              diffOptions.node,
+              diffOptions.before
             );
           }
           break;
@@ -238,7 +235,13 @@ Tagger.prototype = {
         case "undefined":
           if (value == null) {
             fastPath = false;
-            childNodes = domdiff(node.parentNode, childNodes, [], diffOptions);
+            childNodes = domdiff(
+              node.parentNode,
+              childNodes,
+              [],
+              diffOptions.node,
+              diffOptions.before
+            );
             break;
           }
         default:
@@ -251,7 +254,8 @@ Tagger.prototype = {
                   node.parentNode,
                   childNodes,
                   [],
-                  diffOptions
+                  diffOptions.node,
+                  diffOptions.before
                 );
               }
             } else {
@@ -274,7 +278,8 @@ Tagger.prototype = {
                     node.parentNode,
                     childNodes,
                     value,
-                    diffOptions
+                    diffOptions.node,
+                    diffOptions.before
                   );
                   break;
               }
@@ -286,7 +291,8 @@ Tagger.prototype = {
               value.nodeType === DOCUMENT_FRAGMENT_NODE
                 ? slice.call(value.childNodes)
                 : [value],
-              diffOptions
+              diffOptions.node,
+              diffOptions.before
             );
           } else if (isPromise_ish(value)) {
             value.then(anyContent);
@@ -304,7 +310,8 @@ Tagger.prototype = {
                 createContent([].concat(value.html).join(""), nodeType)
                   .childNodes
               ),
-              diffOptions
+              diffOptions.node,
+              diffOptions.before
             );
           } else if ("length" in value) {
             anyContent(slice.call(value));

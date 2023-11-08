@@ -1,45 +1,38 @@
-var Wire = (function (slice, proto) {
-  proto = Wire.prototype;
+export const wireType = 111;
 
-  proto.ELEMENT_NODE = 1;
-  proto.nodeType = 111;
+export class Wire {
+  ELEMENT_NODE = 1;
+  nodeType = wireType;
+  _ = null;
 
-  proto.remove = function (keepFirst) {
-    var childNodes = this.childNodes;
-    var first = this.firstChild;
-    var last = this.lastChild;
-    this._ = null;
-    if (keepFirst && childNodes.length === 2) {
-      last.parentNode.removeChild(last);
-    } else {
-      var range = this.ownerDocument.createRange();
-      range.setStartBefore(keepFirst ? childNodes[1] : first);
-      range.setEndAfter(last);
-      range.deleteContents();
-    }
-    return first;
-  };
-
-  proto.valueOf = function (forceAppend) {
-    var fragment = this._;
-    var noFragment = fragment == null;
-    if (noFragment)
-      fragment = this._ = this.ownerDocument.createDocumentFragment();
-    if (noFragment || forceAppend) {
-      for (var n = this.childNodes, i = 0, l = n.length; i < l; i++)
-        fragment.appendChild(n[i]);
-    }
-    return fragment;
-  };
-
-  return Wire;
-
-  function Wire(childNodes) {
-    var nodes = (this.childNodes = slice.call(childNodes, 0));
-    this.firstChild = nodes[0];
-    this.lastChild = nodes[nodes.length - 1];
-    this.ownerDocument = nodes[0].ownerDocument;
-    this._ = null;
+  constructor(childNodes) {
+    this.parentNode = childNodes[0].parentNode;
+    this.childNodes = [...childNodes];
   }
-})([].slice);
-export default Wire;
+
+  get firstChild() {
+    return this.childNodes[0];
+  }
+
+  get lastChild() {
+    return this.childNodes[this.childNodes.length - 1];
+  }
+
+  get ownerDocument() {
+    return this.firstChild.ownerDocument;
+  }
+
+  remove() {
+    this._ = null;
+    this.parentNode.replaceChildren();
+  }
+
+  valueOf() {
+    let fragment = this._;
+    if (fragment === null) {
+      fragment = this._ = this.ownerDocument.createDocumentFragment();
+    }
+    fragment.replaceChildren(...this.childNodes);
+    return fragment;
+  }
+}
