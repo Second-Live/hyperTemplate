@@ -351,12 +351,12 @@ describe("hyper", function () {
       document.createTextNode("c")
     ];
     let testingMajinBuu = hyperHTML.bind(wrap);
-    testingMajinBuu`${[text]}`;
+    testingMajinBuu`${text}`;
     expect(wrap.textContent).to.equal("abc");
 
     text[0] = document.createTextNode("c");
     text[2] = document.createTextNode("a");
-    testingMajinBuu`${[text]}`;
+    testingMajinBuu`${text}`;
     expect(wrap.textContent).to.equal("cba");
 
     let result = hyperHTML.wire()`<!--not hyperHTML-->`;
@@ -398,11 +398,11 @@ describe("hyper", function () {
       "12"
     );
     let arr = [document.createTextNode("a"), document.createTextNode("b")];
-    empty([arr]);
+    empty(arr);
     expect(wrap.textContent, "text as multi entry array of nodes").to.equal(
       "ab"
     );
-    empty([arr]);
+    empty(arr);
     expect(wrap.textContent, "same array of nodes").to.equal("ab");
     empty(wrap.childNodes);
     expect(wrap.textContent, "childNodes as list").to.equal("ab");
@@ -620,6 +620,27 @@ describe("hyper", function () {
     expect(div.childElementCount, "correct elements as setAny").to.equal(4);
 
     hyperHTML.bind(div)`<p></p>${employees.map(getEmployee)}`;
+    expect(div.childElementCount, "correct elements as setVirtual").to.equal(5);
+
+    hyperHTML.bind(div)`<p></p>${[]}`;
+    expect(div.childElementCount, "only one element left").to.equal(1);
+  });
+
+  it("# wired arrays are rendered properly with empty array item", function () {
+    const div = document.createElement("div");
+    const employees = [
+      { first: "Bob", last: "Li" },
+      { first: "Ayesha", last: "Johnson" }
+    ];
+    const getEmployee = (employee) => hyperHTML.wire(employee)`
+      <div>First name: ${employee.first}</div><p></p>`;
+    hyperHTML.bind(div)`${employees.map(getEmployee)}`;
+    expect(div.childElementCount, "correct elements as setAny").to.equal(4);
+
+    const array = employees.map(getEmployee);
+    array.push(null);
+    array.unshift(null);
+    hyperHTML.bind(div)`<p></p>${array}`;
     expect(div.childElementCount, "correct elements as setVirtual").to.equal(5);
 
     hyperHTML.bind(div)`<p></p>${[]}`;

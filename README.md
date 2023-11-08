@@ -57,11 +57,7 @@ npm install hypertemplate
 If your bundler does not work with the following:
 
 ```js
-// ES6
 import hyperHTML from "hyperhtml";
-
-// CJS
-const hyperHTML = require("hyperhtml");
 ```
 
 You can try any of these other options.
@@ -70,12 +66,4 @@ You can try any of these other options.
 import hyperHTML from "hyperhtml/esm";
 // or
 import { hyper, wire, bind } from "hyperhtml/esm";
-// or
-import hyperHTML from "https://unpkg.com/hyperhtml?module";
-
-const hyperHTML = require("hyperhtml/cjs").default;
-// or
-const { hyper, wire, bind } = require("hyperhtml/cjs");
 ```
-
-In alternative, there is a pre-bundled `require("hyperhtml/umd")` or via unpkg as [UMD module](https://unpkg.com/hyperhtml@latest/umd.js).

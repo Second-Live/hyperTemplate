@@ -201,7 +201,6 @@ Tagger.prototype = {
   //  * it's an Array, resolve all values if Promises and/or
   //    update the node with the resulting list of content
   any(node, childNodes) {
-    const diffOptions = { node: asNode, before: node };
     const nodeType =
       OWNER_SVG_ELEMENT in node ? /* istanbul ignore next */ "svg" : "html";
     let fastPath = false;
@@ -223,8 +222,8 @@ Tagger.prototype = {
               node.parentNode,
               childNodes,
               [text(node, value)],
-              diffOptions.node,
-              diffOptions.before
+              asNode,
+              node
             );
           }
           break;
@@ -235,13 +234,7 @@ Tagger.prototype = {
         case "undefined":
           if (value == null) {
             fastPath = false;
-            childNodes = domdiff(
-              node.parentNode,
-              childNodes,
-              [],
-              diffOptions.node,
-              diffOptions.before
-            );
+            childNodes = domdiff(node.parentNode, childNodes, [], asNode, node);
             break;
           }
         default:
@@ -254,8 +247,8 @@ Tagger.prototype = {
                   node.parentNode,
                   childNodes,
                   [],
-                  diffOptions.node,
-                  diffOptions.before
+                  asNode,
+                  node
                 );
               }
             } else {
@@ -266,8 +259,8 @@ Tagger.prototype = {
                   anyContent({ html: value });
                   break;
                 case "object":
-                  if (isArray(value[0])) {
-                    value = value.concat.apply([], value);
+                  if (isArray(value)) {
+                    value = value.filter((v) => !!v);
                   }
                   if (isPromise_ish(value[0])) {
                     Promise.all(value).then(anyContent);
@@ -278,8 +271,8 @@ Tagger.prototype = {
                     node.parentNode,
                     childNodes,
                     value,
-                    diffOptions.node,
-                    diffOptions.before
+                    asNode,
+                    node
                   );
                   break;
               }
@@ -291,8 +284,8 @@ Tagger.prototype = {
               value.nodeType === DOCUMENT_FRAGMENT_NODE
                 ? slice.call(value.childNodes)
                 : [value],
-              diffOptions.node,
-              diffOptions.before
+              asNode,
+              node
             );
           } else if (isPromise_ish(value)) {
             value.then(anyContent);
@@ -310,8 +303,8 @@ Tagger.prototype = {
                 createContent([].concat(value.html).join(""), nodeType)
                   .childNodes
               ),
-              diffOptions.node,
-              diffOptions.before
+              asNode,
+              node
             );
           } else if ("length" in value) {
             anyContent(slice.call(value));

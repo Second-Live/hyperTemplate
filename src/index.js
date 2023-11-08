@@ -11,6 +11,7 @@ import render from "./hyper/render.js";
 const bind = (context) => render.bind(context);
 const define = Intent.define;
 const tagger = Tagger.prototype;
+const Component = null;
 
 hyper.bind = bind;
 hyper.define = define;
@@ -22,7 +23,7 @@ hyper.wire = wire;
 
 // everything is exported directly or through the
 // hyperHTML callback, when used as top level script
-export { bind, define, diff, hyper, observe, tagger, wire };
+export { bind, define, diff, hyper, observe, tagger, wire, Component };
 
 // by default, hyperHTML is a smart function
 // that "magically" understands what's the best
