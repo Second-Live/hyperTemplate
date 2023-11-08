@@ -1,27 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      body { font-family: sans-serif; text-align: center; }
-      body.passed { background-color: #0FA;  }
-      h1 { font-size: 1.2em; }
-    </style>
-    <script>window.module = {};</script>
-    <script>delete window.module;</script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+    <script defer src="https://unpkg.com/chai/chai.js"></script>
+    <script defer src="https://unpkg.com/mocha/mocha.js"></script>
+    <script class="mocha-init">
+      window.expext = chai.expect;
+      mocha.setup("bdd");
+    </script>
+    <script type="module" src="../esm.js"></script>
+    <script type="module" src="./test.js"></script>
+    <script type="module">
+      mocha.run();
+    </script>
   </head>
   <body>
-    <h1>results in console</h1>
+    <div id="mocha"></div>
   </body>
-  <script src="https://unpkg.com/consolemd@0.1.2"></script>
-  <script src="https://unpkg.com/tressa@0.3.1"></script>
-  <script>
-  if (!this.tressa) {
-    document.write('<script src="../node_modules/consolemd/index.js?_=' + Math.random() + '"><\x2fscript>');
-    document.write('<script src="../node_modules/tressa/index.js?_=' + Math.random() + '"><\x2fscript>');  
-  }
-  document.write('<script src="../index.js?_=' + Math.random() + '"><\x2fscript>');
-  document.write('<script src="./test.js?_=' + Math.random() + '"><\x2fscript>');
-  </script>
 </html>

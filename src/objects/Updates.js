@@ -1,26 +1,29 @@
-'use strict';
-const disconnected = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('disconnected'));
-const domdiff = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('domdiff'));
-const domtagger = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('domtagger'));
-const hyperStyle = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('hyperhtml-style'));
-const Wire = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('hyperhtml-wire'));
+import disconnected from "disconnected";
+import domdiffPKG from "domdiff";
+const domdiff = domdiffPKG.default || domdiffPKG;
+import domtaggerPKG from "domtagger";
+const domtagger = domtaggerPKG.default || domtaggerPKG;
+import hyperStyle from "hyperhtml-style";
+import Wire from "hyperhtml-wire";
 
-const {
-  CONNECTED, DISCONNECTED, DOCUMENT_FRAGMENT_NODE, OWNER_SVG_ELEMENT
-} = require('../shared/constants.js');
+import {
+  CONNECTED,
+  DISCONNECTED,
+  DOCUMENT_FRAGMENT_NODE,
+  OWNER_SVG_ELEMENT
+} from "../shared/constants.js";
 
-const { isArray, createContent } = require('../shared/utils.js');
-const Intent = (m => /* c8 ignore start */ m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m /* c8 ignore stop */)(require('./Intent.js'));
+import { isArray, createContent } from "../shared/utils.js";
+import Intent from "./Intent.js";
 
 const wireType = Wire.prototype.nodeType;
 
-const observe = disconnected({Event: CustomEvent, WeakSet});
+const observe = disconnected({ Event: CustomEvent, WeakSet });
 
-exports.Tagger = Tagger;
-exports.observe = observe;
+export { Tagger, observe };
 
 // returns an intent to explicitly inject content as html
-const asHTML = html => ({html});
+const asHTML = (html) => ({ html });
 
 // returns nodes from wires
 const asNode = (item, i) => {
@@ -30,40 +33,42 @@ const asNode = (item, i) => {
       // removed, post-pended, inserted, or pre-pended and
       // all these cases are handled by domdiff already
       /* istanbul ignore next */
-      return (1 / i) < 0 ?
-        (i ? item.remove(true) : item.lastChild) :
-        (i ? item.valueOf(true) : item.firstChild);
+      return 1 / i < 0
+        ? i
+          ? item.remove(true)
+          : item.lastChild
+        : i
+        ? item.valueOf(true)
+        : item.firstChild;
     default:
       return item;
   }
-}
+};
 
 // returns true if domdiff can handle the value
-const canDiff = value => 'ELEMENT_NODE' in value;
+const canDiff = (value) => "ELEMENT_NODE" in value;
 
 // borrowed from uhandlers
 // https://github.com/WebReflection/uhandlers
-const booleanSetter = (node, key, oldValue) => newValue => {
+const booleanSetter = (node, key, oldValue) => (newValue) => {
   if (oldValue !== !!newValue) {
-    if ((oldValue = !!newValue))
-      node.setAttribute(key, '');
-    else
-      node.removeAttribute(key);
+    if ((oldValue = !!newValue)) node.setAttribute(key, "");
+    else node.removeAttribute(key);
   }
 };
 
-const hyperSetter = (node, name, svg) => svg ?
-  value => {
-    try {
-      node[name] = value;
-    }
-    catch (nope) {
-      node.setAttribute(name, value);
-    }
-  } :
-  value => {
-    node[name] = value;
-  };
+const hyperSetter = (node, name, svg) =>
+  svg
+    ? (value) => {
+        try {
+          node[name] = value;
+        } catch (nope) {
+          node.setAttribute(name, value);
+        }
+      }
+    : (value) => {
+        node[name] = value;
+      };
 
 // when a Promise is used as interpolation value
 // its result must be parsed once resolved.
@@ -71,11 +76,11 @@ const hyperSetter = (node, name, svg) => svg ?
 // with a returned value once the promise is resolved.
 const invokeAtDistance = (value, callback) => {
   callback(value.placeholder);
-  if ('text' in value) {
+  if ("text" in value) {
     Promise.resolve(value.text).then(String).then(callback);
-  } else if ('any' in value) {
+  } else if ("any" in value) {
     Promise.resolve(value.any).then(callback);
-  } else if ('html' in value) {
+  } else if ("html" in value) {
     Promise.resolve(value.html).then(asHTML).then(callback);
   } else {
     Promise.resolve(Intent.invoke(value, callback)).then(callback);
@@ -83,7 +88,7 @@ const invokeAtDistance = (value, callback) => {
 };
 
 // quick and dirty way to check for Promise/ish values
-const isPromise_ish = value => value != null && 'then' in value;
+const isPromise_ish = (value) => value != null && "then" in value;
 
 // list of attributes that should not be directly assigned
 const readOnly = /^(?:form|list)$/i;
@@ -100,7 +105,6 @@ function Tagger(type) {
 }
 
 Tagger.prototype = {
-
   // there are four kind of attributes, and related behavior:
   //  * events, with a name starting with `on`, to add/remove event listeners
   //  * special, with a name present in their inherited prototype, accessed directly
@@ -113,13 +117,12 @@ Tagger.prototype = {
     let oldValue;
     // if the attribute is the style one
     // handle it differently from others
-    if (name === 'style')
-      return hyperStyle(node, original, isSVG);
+    if (name === "style") return hyperStyle(node, original, isSVG);
     // direct accessors for <input .value=${...}> and friends
-    else if (name.slice(0, 1) === '.')
+    else if (name.slice(0, 1) === ".")
       return hyperSetter(node, name.slice(1), isSVG);
     // boolean accessors for <input .value=${...}> and friends
-    else if (name.slice(0, 1) === '?')
+    else if (name.slice(0, 1) === "?")
       return booleanSetter(node, name.slice(1));
     // the name is an event one,
     // add/remove event listeners accordingly
@@ -127,18 +130,14 @@ Tagger.prototype = {
       let type = name.slice(2);
       if (type === CONNECTED || type === DISCONNECTED) {
         observe(node);
-      }
-      else if (name.toLowerCase()
-        in node) {
+      } else if (name.toLowerCase() in node) {
         type = type.toLowerCase();
       }
-      return newValue => {
+      return (newValue) => {
         if (oldValue !== newValue) {
-          if (oldValue)
-            node.removeEventListener(type, oldValue, false);
+          if (oldValue) node.removeEventListener(type, oldValue, false);
           oldValue = newValue;
-          if (newValue)
-            node.addEventListener(type, newValue, false);
+          if (newValue) node.addEventListener(type, newValue, false);
         }
       };
     }
@@ -146,32 +145,27 @@ Tagger.prototype = {
     // and it's not SVG *or* the name is exactly data,
     // in this case assign the value directly
     else if (
-      name === 'data' ||
+      name === "data" ||
       (!isSVG && name in node && !readOnly.test(name))
     ) {
-      return newValue => {
+      return (newValue) => {
         if (oldValue !== newValue) {
           oldValue = newValue;
           if (node[name] !== newValue && newValue == null) {
             // cleanup on null to avoid silly IE/Edge bug
-            node[name] = '';
+            node[name] = "";
             node.removeAttribute(name);
-          }
-          else
-            node[name] = newValue;
+          } else node[name] = newValue;
         }
       };
-    }
-    else if (name in Intent.attributes) {
+    } else if (name in Intent.attributes) {
       oldValue;
-      return any => {
+      return (any) => {
         const newValue = Intent.attributes[name](node, any);
         if (oldValue !== newValue) {
           oldValue = newValue;
-          if (newValue == null)
-            node.removeAttribute(name);
-          else
-            node.setAttribute(name, newValue);
+          if (newValue == null) node.removeAttribute(name);
+          else node.setAttribute(name, newValue);
         }
       };
     }
@@ -180,7 +174,7 @@ Tagger.prototype = {
     else {
       let owner = false;
       const attribute = original.cloneNode(true);
-      return newValue => {
+      return (newValue) => {
         if (oldValue !== newValue) {
           oldValue = newValue;
           if (attribute.value !== newValue) {
@@ -213,15 +207,16 @@ Tagger.prototype = {
   //  * it's an Array, resolve all values if Promises and/or
   //    update the node with the resulting list of content
   any(node, childNodes) {
-    const diffOptions = {node: asNode, before: node};
-    const nodeType = OWNER_SVG_ELEMENT in node ? /* istanbul ignore next */ 'svg' : 'html';
+    const diffOptions = { node: asNode, before: node };
+    const nodeType =
+      OWNER_SVG_ELEMENT in node ? /* istanbul ignore next */ "svg" : "html";
     let fastPath = false;
     let oldValue;
-    const anyContent = value => {
+    const anyContent = (value) => {
       switch (typeof value) {
-        case 'string':
-        case 'number':
-        case 'boolean':
+        case "string":
+        case "number":
+        case "boolean":
           if (fastPath) {
             if (oldValue !== value) {
               oldValue = value;
@@ -238,19 +233,14 @@ Tagger.prototype = {
             );
           }
           break;
-        case 'function':
+        case "function":
           anyContent(value(node));
           break;
-        case 'object':
-        case 'undefined':
+        case "object":
+        case "undefined":
           if (value == null) {
             fastPath = false;
-            childNodes = domdiff(
-              node.parentNode,
-              childNodes,
-              [],
-              diffOptions
-            );
+            childNodes = domdiff(node.parentNode, childNodes, [], diffOptions);
             break;
           }
         default:
@@ -268,12 +258,12 @@ Tagger.prototype = {
               }
             } else {
               switch (typeof value[0]) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                  anyContent({html: value});
+                case "string":
+                case "number":
+                case "boolean":
+                  anyContent({ html: value });
                   break;
-                case 'object':
+                case "object":
                   if (isArray(value[0])) {
                     value = value.concat.apply([], value);
                   }
@@ -295,32 +285,30 @@ Tagger.prototype = {
             childNodes = domdiff(
               node.parentNode,
               childNodes,
-              value.nodeType === DOCUMENT_FRAGMENT_NODE ?
-                slice.call(value.childNodes) :
-                [value],
+              value.nodeType === DOCUMENT_FRAGMENT_NODE
+                ? slice.call(value.childNodes)
+                : [value],
               diffOptions
             );
           } else if (isPromise_ish(value)) {
             value.then(anyContent);
-          } else if ('placeholder' in value) {
+          } else if ("placeholder" in value) {
             invokeAtDistance(value, anyContent);
-          } else if ('text' in value) {
+          } else if ("text" in value) {
             anyContent(String(value.text));
-          } else if ('any' in value) {
+          } else if ("any" in value) {
             anyContent(value.any);
-          } else if ('html' in value) {
+          } else if ("html" in value) {
             childNodes = domdiff(
               node.parentNode,
               childNodes,
               slice.call(
-                createContent(
-                  [].concat(value.html).join(''),
-                  nodeType
-                ).childNodes
+                createContent([].concat(value.html).join(""), nodeType)
+                  .childNodes
               ),
               diffOptions
             );
-          } else if ('length' in value) {
+          } else if ("length" in value) {
             anyContent(slice.call(value));
           } else {
             anyContent(Intent.invoke(value, anyContent));
@@ -337,30 +325,30 @@ Tagger.prototype = {
   // for possible defined intents.
   text(node) {
     let oldValue;
-    const textContent = value => {
+    const textContent = (value) => {
       if (oldValue !== value) {
         oldValue = value;
         const type = typeof value;
-        if (type === 'object' && value) {
+        if (type === "object" && value) {
           if (isPromise_ish(value)) {
             value.then(textContent);
-          } else if ('placeholder' in value) {
+          } else if ("placeholder" in value) {
             invokeAtDistance(value, textContent);
-          } else if ('text' in value) {
+          } else if ("text" in value) {
             textContent(String(value.text));
-          } else if ('any' in value) {
+          } else if ("any" in value) {
             textContent(value.any);
-          } else if ('html' in value) {
-            textContent([].concat(value.html).join(''));
-          } else if ('length' in value) {
-            textContent(slice.call(value).join(''));
+          } else if ("html" in value) {
+            textContent([].concat(value.html).join(""));
+          } else if ("length" in value) {
+            textContent(slice.call(value).join(""));
           } else {
             textContent(Intent.invoke(value, textContent));
           }
-        } else if (type === 'function') {
+        } else if (type === "function") {
           textContent(value(node));
         } else {
-          node.textContent = value == null ? '' : value;
+          node.textContent = value == null ? "" : value;
         }
       }
     };

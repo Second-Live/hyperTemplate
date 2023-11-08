@@ -2,89 +2,12 @@
   "name": "hypertemplate",
   "version": "0.0.0",
   "description": "A Fast & Light Virtual DOM Alternative",
-  "unpkg": "min.js",
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
+  "type": "module",
+  "module": "src/index.js",
   "types": "index.d.ts",
   "scripts": {
-    "$": "npm-dollar",
-    "build": "npm run $ build",
-    "bundle": "npm run $ bundle",
-    "test": "npm run $ test"
-  },
-  "$": {
-    "bundle": {
-      "max": [
-        "rollup --config rollup.config.mjs",
-        "$ clean.esm"
-      ],
-      "min": [
-        [
-          "echo \"/*! (c) Andrea Giammarchi (ISC) */$(",
-          "uglifyjs index.js -c -m",
-          ")\" > min.js"
-        ]
-      ],
-      "umd": [
-        [
-          "echo \"(function(A,G){if(typeof define=='function'&&define.amd)define([],G);else",
-          "if(typeof module=='object'&&module.exports)module.exports=G();else",
-          "A.hyperHTML=G()}(typeof self!='undefined'?self:this,function(){\">umd.js;cat",
-          "min.js>>umd.js;echo \"return hyperHTML}));\">>umd.js"
-        ]
-      ],
-      "esm": [
-        "cp min.js esm.js",
-        "echo 'export default hyperHTML;' >> esm.js",
-        "echo 'export const {bind, define, diff, hyper, wire} = hyperHTML;' >> esm.js"
-      ]
-    },
-    "build": [
-      "$ cjs",
-      "$ clean.cjs index.js",
-      "$ clean.cjs hyper/render.js",
-      "$ clean.cjs objects/Updates.js",
-      "$ clean.cjs shared/utils.js",
-      "$ clean.cjs hyper/wire.js",
-      "$ bundle.max",
-      "$ bundle.min",
-      "$ bundle.umd",
-      "$ bundle.esm",
-      "$ test",
-      "$ size"
-    ],
-    "clean": {
-      "cjs": "sed -i.bck 's/m.default : m/\\/* istanbul ignore next *\\/ m.default : \\/* istanbul ignore next *\\/ m/g' cjs/$1 && rm -f cjs/$1.bck",
-      "esm": [
-        [
-          "cat index.js |",
-          "sed 's/(exports)/(document)/' |",
-          "sed 's/return exports;/return hyper;/' |",
-          "sed -e 's/exports.*;//g' |",
-          "sed '/var createContent$1 =/,/(document));/d' |",
-          "sed 's/createContent$1/createContent/' |",
-          "sed 's/({})/(document)/' > index.clean"
-        ],
-        "mv index.clean index.js"
-      ]
-    },
-    "cjs": [
-      "ascjs ./esm ./cjs"
-    ],
-    "size": {
-      "gzip": [
-        [
-          "cat index.js |",
-          "wc -c;cat min.js |",
-          "wc -c;gzip -c9 min.js |",
-          "wc -c"
-        ]
-      ],
-      "brotli": "cat min.js | brotli | wc -c"
-    },
-    "test": [
-      "nyc node test/runner.js"
-    ]
+    "build": "rollup --config rollup.config.mjs",
+    "test": "c8 mocha"
   },
   "repository": {
     "type": "git",
@@ -110,13 +33,12 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.2.3",
-    "ascjs": "6.0.3",
-    "basichtml": "2.4.9",
-    "npm-dollar": "2.2.1",
-    "nyc": "15.1.0",
-    "rollup": "4.2.0",
-    "tressa": "0.3.1",
-    "uglify-js": "3.17.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "c8": "^8.0.1",
+    "chai": "^4.3.10",
+    "jsdom": "^22.1.0",
+    "mocha": "^10.2.0",
+    "rollup": "4.2.0"
   },
   "dependencies": {
     "disconnected": "0.2.1",
@@ -124,5 +46,12 @@
     "domtagger": "0.7.2",
     "hyperhtml-style": "0.1.3",
     "hyperhtml-wire": "2.1.1"
+  },
+  "mocha": {
+    "ui": "bdd",
+    "require": "test/hooks.js"
+  },
+  "prettier": {
+    "trailingComma": "none"
   }
 }
