@@ -1,42 +1,32 @@
-import { UID, UIDC, VOID_ELEMENTS } from "../shared/constants.js";
+const empty =
+  /^(?:area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/i;
+const elements = /<([a-z]+[a-z0-9:._-]*)([^>]*?)(\/?)>/g;
+const attributes = /([^\s\\>"'=]+)\s*=\s*(['"]?)\x01/g;
+const holes = /[\x01\x02]/g;
 
-export default function (template) {
+// \x01 Node.ELEMENT_NODE
+// \x02 Node.ATTRIBUTE_NODE
+
+/**
+ * Given a template, find holes as both nodes and attributes and
+ * return a string with holes as either comment nodes or named attributes.
+ * @param {string[]} template a template literal tag array
+ * @param {string} prefix prefix to use per each comment/attribute
+ * @param {boolean} svg enforces self-closing tags
+ * @returns {string} X/HTML with prefixed comments or attributes
+ */
+export const instrument = (template, prefix, svg) => {
+  let i = 0;
   return template
-    .join(UIDC)
-    .replace(selfClosing, fullClosing)
-    .replace(attrSeeker, attrReplacer);
-}
-
-var spaces = " \\f\\n\\r\\t";
-var almostEverything = "[^" + spaces + "\\/>\"'=]+";
-var attrName = "[" + spaces + "]+" + almostEverything;
-var tagName = "<([A-Za-z]+[A-Za-z0-9:._-]*)((?:";
-var attrPartials =
-  "(?:\\s*=\\s*(?:'[^']*?'|\"[^\"]*?\"|<[^>]*?>|" +
-  almostEverything.replace("\\/", "") +
-  "))?)";
-
-var attrSeeker = new RegExp(
-  tagName + attrName + attrPartials + "+)([" + spaces + "]*/?>)",
-  "g"
-);
-var selfClosing = new RegExp(
-  tagName + attrName + attrPartials + "*)([" + spaces + "]*/>)",
-  "g"
-);
-var findAttributes = new RegExp(
-  "(" + attrName + "\\s*=\\s*)(['\"]?)" + UIDC + "\\2",
-  "gi"
-);
-
-function attrReplacer($0, $1, $2, $3) {
-  return "<" + $1 + $2.replace(findAttributes, replaceAttributes) + $3;
-}
-
-function replaceAttributes($0, $1, $2) {
-  return $1 + ($2 || '"') + UID + ($2 || '"');
-}
-
-function fullClosing($0, $1, $2) {
-  return VOID_ELEMENTS.test($1) ? $0 : "<" + $1 + $2 + "></" + $1 + ">";
-}
+    .join("\x01")
+    .trim()
+    .replace(elements, (_, name, attrs, selfClosing) => {
+      let ml = name + attrs.replace(attributes, "\x02=$2$1").trimEnd();
+      if (selfClosing.length)
+        ml += svg || empty.test(name) ? " /" : "></" + name;
+      return "<" + ml + ">";
+    })
+    .replace(holes, (hole) =>
+      hole === "\x01" ? "<!--" + prefix + i++ + "-->" : prefix + i++
+    );
+};

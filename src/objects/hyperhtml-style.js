@@ -4,24 +4,11 @@ var hyperStyle = (function () {
   var IS_NON_DIMENSIONAL =
     /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i;
   var hyphen = /([^A-Z])([A-Z]+)/g;
-  return function hyperStyle(node, original) {
-    return "ownerSVGElement" in node
-      ? svg(node, original)
-      : update(node.style, false);
+  return function hyperStyle(node) {
+    return update(node.style, false);
   };
   function ized($0, $1, $2) {
     return $1 + "-" + $2.toLowerCase();
-  }
-  function svg(node, original) {
-    var style;
-    if (original) style = original.cloneNode(true);
-    else {
-      node.setAttribute("style", "--hyper:style;");
-      style = node.getAttributeNode("style");
-    }
-    style.value = "";
-    node.setAttributeNode(style);
-    return update(style, true);
   }
   function toStyle(object) {
     var key,

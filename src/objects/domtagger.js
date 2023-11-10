@@ -1,99 +1,140 @@
-import { createContent } from "../shared/utils.js";
-import sanitize from "./domsanitizer.js";
-
-// local
-import { find, parse } from "./walker.js";
+import {
+  createContent,
+  createTreeWalker,
+  importNode
+} from "../shared/utils.js";
+import { instrument } from "./domsanitizer.js";
 
 // the domtagger 🎉
 export default domtagger;
 
+// a RegExp that helps checking nodes that cannot contain comments
+const textOnly = /^(?:textarea|script|style|title|plaintext|xmp)$/;
 const trim = "".trim;
 const parsed = new WeakMap();
 
+// the prefix is used to identify either comments, attributes, or nodes
+// that contain the related unique id. In the attribute cases
+// isµX="attribute-name" will be used to map current X update to that
+// attribute name, while comments will be like <!--isµX-->, to map
+// the update to that specific comment node, hence its parent.
+// style and textarea will have <!--isµX--> text content, and are handled
+// directly through text-only updates.
+const prefix = "isµ";
+
 function createInfo(options, template) {
-  var markup = (options.convert || sanitize)(template);
-  var transform = options.transform;
-  if (transform) markup = transform(markup);
-  var content = createContent(markup, options.type);
-  cleanContent(content);
-  var holes = [];
-  parse(content, holes, template.slice(0), []);
-  return {
-    content: content,
-    updates: function (content) {
-      var updates = [];
-      var len = holes.length;
-      var i = 0;
-      var off = 0;
-      while (i < len) {
-        var info = holes[i++];
-        var node = find(content, info.path);
-        switch (info.type) {
-          case "any":
-            updates.push({ fn: options.any(node, []), sparse: false });
-            break;
-          case "attr":
-            var sparse = info.sparse;
-            var fn = options.attribute(node, info.name, info.node);
-            if (sparse === null) updates.push({ fn: fn, sparse: false });
-            else {
-              off += sparse.length - 2;
-              updates.push({ fn: fn, sparse: true, values: sparse });
-            }
-            break;
-          case "text":
-            updates.push({ fn: options.text(node), sparse: false });
-            node.textContent = "";
-            break;
-        }
+  const svg = options.svg === "svg";
+  const markup = instrument(template, prefix, svg);
+  const content = createContent(markup, options.type);
+
+  // once instrumented and reproduced as fragment, it's crawled
+  // to find out where each update is in the fragment tree
+  const tw = createTreeWalker(content, 1 | 128);
+  const nodes = [];
+  const length = template.length - 1;
+  let i = 0;
+  // updates are searched via unique names, linearly increased across the tree
+  // <div isµ0="attr" isµ1="other"><!--isµ2--><style><!--isµ3--</style></div>
+  let search = `${prefix}${i}`;
+  while (i < length) {
+    const node = tw.nextNode();
+    // if not all updates are bound but there's nothing else to crawl
+    // it means that there is something wrong with the template.
+    if (!node) throw `bad template: ${text}`;
+    // if the current node is a comment, and it contains isµX
+    // it means the update should take care of any content
+    if (node.nodeType === 8) {
+      // The only comments to be considered are those
+      // which content is exactly the same as the searched one.
+      if (node.data === search) {
+        nodes.push({ type: "node", path: createPath(node) });
+        search = `${prefix}${++i}`;
       }
-      len += off;
-      return function () {
-        var length = arguments.length;
-        if (len !== length - 1) {
-          throw new Error(
-            length -
-              1 +
-              " values instead of " +
-              len +
-              "\n" +
-              template.join("${value}")
-          );
-        }
-        var i = 1;
-        var off = 1;
-        while (i < length) {
-          var update = updates[i - off];
-          if (update.sparse) {
-            var values = update.values;
-            var value = values[0];
-            var j = 1;
-            var l = values.length;
-            off += l - 2;
-            while (j < l) value += arguments[i++] + values[j++];
-            update.fn(value);
-          } else update.fn(arguments[i++]);
-        }
-        return content;
-      };
+    } else {
+      // if the node is not a comment, loop through all its attributes
+      // named isµX and relate attribute updates to this node and the
+      // attribute name, retrieved through node.getAttribute("isµX")
+      // the isµX attribute will be removed as irrelevant for the layout
+      // let svg = -1;
+      while (node.hasAttribute(search)) {
+        nodes.push({
+          type: "attr",
+          path: createPath(node),
+          name: node.getAttribute(search)
+        });
+        node.removeAttribute(search);
+        search = `${prefix}${++i}`;
+      }
+      // if the node was a style, textarea, or others, check its content
+      // and if it is <!--isµX--> then update tex-only this node
+      if (
+        textOnly.test(node.localName) &&
+        node.textContent.trim() === `<!--${search}-->`
+      ) {
+        node.textContent = "";
+        nodes.push({ type: "text", path: createPath(node) });
+        search = `${prefix}${++i}`;
+      }
     }
-  };
+  }
+  // once all nodes to update, or their attributes, are known, the content
+  // will be cloned in the future to represent the template, and all updates
+  // related to such content retrieved right away without needing to re-crawl
+  // the exact same template, and its content, more than once.
+  return { content, nodes };
 }
+
+// from a generic path, retrieves the exact targeted node
+const reducePath = ({ childNodes }, i) => childNodes[i];
+
+// from a fragment container, create an array of indexes
+// related to its child nodes, so that it's possible
+// to retrieve later on exact node via reducePath
+const indexOf = [].indexOf;
+const createPath = (node) => {
+  const path = [];
+  let { parentNode } = node;
+  while (parentNode) {
+    path.push(indexOf.call(parentNode.childNodes, node));
+    node = parentNode;
+    ({ parentNode } = node);
+  }
+  return path;
+};
 
 function createDetails(options, template) {
   parsed.has(template) || parsed.set(template, createInfo(options, template));
-  const info = parsed.get(template);
-  return info.updates(document.importNode(info.content, true));
+  const { content, nodes } = parsed.get(template);
+  // clone deeply the fragment
+  const fragment = importNode(content, true);
+  // and relate an update handler per each node that needs one
+  const updates = nodes.map(({ type, path, name }) => {
+    const node = path.reduceRight(reducePath, fragment);
+    return type === "node"
+      ? options.any(node)
+      : type === "attr"
+      ? options.attribute(node, name)
+      : options.text(node);
+  });
+  // return the fragment and all updates to use within its nodes
+  return { content: fragment, updates };
 }
 
-var empty = [];
 function domtagger(options) {
-  var previous = empty;
-  var updates = cleanContent;
-  return function (template) {
-    if (previous !== template)
-      updates = createDetails(options, (previous = template));
-    return updates.apply(null, arguments);
+  let previous = [];
+  let updates = [];
+  return function (template, ...values) {
+    let details;
+    if (previous !== template) {
+      details = createDetails(options, (previous = template));
+      updates = details.updates;
+    }
+
+    // even if the fragment and its nodes is not live yet,
+    // it is already possible to update via interpolations values.
+    updates.forEach((up, i) => up(values[i]));
+
+    return details?.content || previous;
   };
 }
 

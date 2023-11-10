@@ -3,6 +3,7 @@ import domdiff from "./domdiff.js";
 import domtagger from "./domtagger.js";
 import hyperStyle from "./hyperhtml-style.js";
 import { wireType } from "../hyper/hyperhtml-wire.js";
+import { attribute, boolean } from "./handlers.js";
 
 import {
   CONNECTED,
@@ -41,15 +42,6 @@ const asNode = (item, i) => {
 
 // returns true if domdiff can handle the value
 const canDiff = (value) => "ELEMENT_NODE" in value;
-
-// borrowed from uhandlers
-// https://github.com/WebReflection/uhandlers
-const booleanSetter = (node, key, oldValue) => (newValue) => {
-  if (oldValue !== !!newValue) {
-    if ((oldValue = !!newValue)) node.setAttribute(key, "");
-    else node.removeAttribute(key);
-  }
-};
 
 const hyperSetter = (node, name, svg) =>
   svg
@@ -106,18 +98,17 @@ Tagger.prototype = {
   //  * style, the only regular attribute that also accepts an object as value
   //    so that you can style=${{width: 120}}. In this case, the behavior has been
   //    fully inspired by Preact library and its simplicity.
-  attribute(node, name, original) {
+  attribute(node, name) {
     const isSVG = OWNER_SVG_ELEMENT in node;
     let oldValue;
     // if the attribute is the style one
     // handle it differently from others
-    if (name === "style") return hyperStyle(node, original, isSVG);
+    if (name === "style") return hyperStyle(node);
     // direct accessors for <input .value=${...}> and friends
     else if (name.slice(0, 1) === ".")
       return hyperSetter(node, name.slice(1), isSVG);
     // boolean accessors for <input .value=${...}> and friends
-    else if (name.slice(0, 1) === "?")
-      return booleanSetter(node, name.slice(1));
+    else if (name.slice(0, 1) === "?") return boolean(node, name.slice(1));
     // the name is an event one,
     // add/remove event listeners accordingly
     else if (/^on/.test(name)) {
@@ -163,32 +154,8 @@ Tagger.prototype = {
         }
       };
     }
-    // in every other case, use the attribute node as it is
-    // update only the value, set it as node only when/if needed
-    else {
-      let owner = false;
-      const attribute = original.cloneNode(true);
-      return (newValue) => {
-        if (oldValue !== newValue) {
-          oldValue = newValue;
-          if (attribute.value !== newValue) {
-            if (newValue == null) {
-              if (owner) {
-                owner = false;
-                node.removeAttributeNode(attribute);
-              }
-              attribute.value = newValue;
-            } else {
-              attribute.value = newValue;
-              if (!owner) {
-                owner = true;
-                node.setAttributeNode(attribute);
-              }
-            }
-          }
-        }
-      };
-    }
+
+    return attribute(node, name);
   },
 
   // in a hyper(node)`<div>${content}</div>` case
@@ -200,7 +167,7 @@ Tagger.prototype = {
   //  * it's an explicit intent, perform the desired operation
   //  * it's an Array, resolve all values if Promises and/or
   //    update the node with the resulting list of content
-  any(node, childNodes) {
+  any(node, childNodes = []) {
     const nodeType =
       OWNER_SVG_ELEMENT in node ? /* istanbul ignore next */ "svg" : "html";
     let fastPath = false;

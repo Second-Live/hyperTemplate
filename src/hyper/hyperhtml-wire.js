@@ -10,6 +10,10 @@ export class Wire {
     this.childNodes = [...childNodes];
   }
 
+  get parentNode() {
+    return this.firstChild?.parentNode;
+  }
+
   get firstChild() {
     return this.childNodes[0];
   }

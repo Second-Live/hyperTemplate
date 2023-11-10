@@ -6,7 +6,9 @@ export const {
   createDocumentFragment,
   createElement,
   createElementNS,
-  createRange
+  createRange,
+  createTreeWalker,
+  importNode
 } = new Proxy(
   {},
   {
