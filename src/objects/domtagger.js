@@ -10,7 +10,6 @@ export default domtagger;
 
 // a RegExp that helps checking nodes that cannot contain comments
 const textOnly = /^(?:textarea|script|style|title|plaintext|xmp)$/;
-const trim = "".trim;
 const parsed = new WeakMap();
 
 // the prefix is used to identify either comments, attributes, or nodes
@@ -136,15 +135,4 @@ function domtagger(options) {
 
     return details?.content || previous;
   };
-}
-
-function cleanContent(fragment) {
-  var childNodes = fragment.childNodes;
-  var i = childNodes.length;
-  while (i--) {
-    var child = childNodes[i];
-    if (child.nodeType !== 1 && trim.call(child.textContent).length === 0) {
-      fragment.removeChild(child);
-    }
-  }
 }

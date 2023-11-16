@@ -23,12 +23,14 @@ const createHTML = (html) => {
 };
 
 let xml;
+let range;
 const createSVG = (svg) => {
-  if (!xml) xml = createElementNS("http://www.w3.org/2000/svg", "svg");
-  xml.innerHTML = svg;
-  const content = createDocumentFragment();
-  content.append(...xml.childNodes);
-  return content;
+  if (!xml) {
+    xml = createElementNS("http://www.w3.org/2000/svg", "svg");
+    range = createRange();
+    range.selectNodeContents(xml);
+  }
+  return range.createContextualFragment(svg);
 };
 
 export const createContent = (text, type) =>

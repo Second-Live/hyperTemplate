@@ -8,7 +8,7 @@ export const attribute = (node, name) => {
   let oldValue;
   let orphan = true;
   const attributeNode = isSVG
-    ? document.createAttributeNS("http://www.w3.org/2000/svg", name)
+    ? document.createAttributeNS(null, name)
     : document.createAttribute(name);
   return (newValue) => {
     const value = newValue?.valueOf();
