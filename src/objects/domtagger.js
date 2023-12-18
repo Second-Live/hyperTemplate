@@ -75,6 +75,24 @@ function createInfo(options, template) {
         search = `${prefix}${++i}`;
       }
     }
+
+    if (/^script$/i.test(node.nodeName)) {
+      console.warn("Script support will be removed in the next major version");
+      // this used to be like that
+      // const script = createElement(node, nodeName);
+      // Browser execute script when it created through createElement.
+      const script = document.createElement(node.nodeName);
+      const attributes = node.attributes;
+      const length = attributes.length;
+      let i = 0;
+
+      while (i < length) {
+        script.setAttributeNode(attributes[i++].cloneNode(true));
+      }
+
+      script.textContent = node.textContent;
+      node.parentNode.replaceChild(script, node);
+    }
   }
   // once all nodes to update, or their attributes, are known, the content
   // will be cloned in the future to represent the template, and all updates
