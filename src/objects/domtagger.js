@@ -21,6 +21,24 @@ const parsed = new WeakMap();
 // directly through text-only updates.
 const prefix = "isµ";
 
+const reCreateScript = function (node) {
+  console.warn("Script support will be removed in the next major version");
+  // this used to be like that
+  // const script = createElement(node, nodeName);
+  // Browser execute script when it created through createElement.
+  const script = document.createElement(node.nodeName);
+  const attributes = node.attributes;
+  const length = attributes.length;
+  let i = 0;
+
+  while (i < length) {
+    script.setAttributeNode(attributes[i++].cloneNode(true));
+  }
+
+  script.textContent = node.textContent;
+  node.parentNode.replaceChild(script, node);
+};
+
 function createInfo(options, template) {
   const svg = options.svg === "svg";
   const markup = instrument(template, prefix, svg);
@@ -28,10 +46,15 @@ function createInfo(options, template) {
 
   // once instrumented and reproduced as fragment, it's crawled
   // to find out where each update is in the fragment tree
-  const tw = createTreeWalker(content, 1 | 128);
+  const tw = document.createTreeWalker(content, 1 | 128);
   const nodes = [];
   const length = template.length - 1;
   let i = 0;
+
+  if (length === 0) {
+    const node = tw.nextNode();
+    /^script$/i.test(node?.nodeName) && reCreateScript(node);
+  }
   // updates are searched via unique names, linearly increased across the tree
   // <div isµ0="attr" isµ1="other"><!--isµ2--><style><!--isµ3--</style></div>
   let search = `${prefix}${i}`;
@@ -39,7 +62,7 @@ function createInfo(options, template) {
     const node = tw.nextNode();
     // if not all updates are bound but there's nothing else to crawl
     // it means that there is something wrong with the template.
-    if (!node) throw `bad template: ${text}`;
+    if (!node) throw `bad template: ${template}`;
     // if the current node is a comment, and it contains isµX
     // it means the update should take care of any content
     if (node.nodeType === 8) {
@@ -74,24 +97,6 @@ function createInfo(options, template) {
         nodes.push({ type: "text", path: createPath(node) });
         search = `${prefix}${++i}`;
       }
-    }
-
-    if (/^script$/i.test(node.nodeName)) {
-      console.warn("Script support will be removed in the next major version");
-      // this used to be like that
-      // const script = createElement(node, nodeName);
-      // Browser execute script when it created through createElement.
-      const script = document.createElement(node.nodeName);
-      const attributes = node.attributes;
-      const length = attributes.length;
-      let i = 0;
-
-      while (i < length) {
-        script.setAttributeNode(attributes[i++].cloneNode(true));
-      }
-
-      script.textContent = node.textContent;
-      node.parentNode.replaceChild(script, node);
     }
   }
   // once all nodes to update, or their attributes, are known, the content
