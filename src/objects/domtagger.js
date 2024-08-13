@@ -46,7 +46,7 @@ function createInfo(options, template) {
 
   // once instrumented and reproduced as fragment, it's crawled
   // to find out where each update is in the fragment tree
-  const tw = document.createTreeWalker(content, 1 | 128);
+  const tw = createTreeWalker(content, 1 | 128);
   const nodes = [];
   const length = template.length - 1;
   let i = 0;

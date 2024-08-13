@@ -136,11 +136,10 @@ Tagger.prototype = {
       return (newValue) => {
         if (oldValue !== newValue) {
           oldValue = newValue;
-          if (node[name] !== newValue && newValue == null) {
-            // cleanup on null to avoid silly IE/Edge bug
-            node[name] = "";
-            node.removeAttribute(name);
-          } else node[name] = newValue;
+          if (node[name] !== newValue) {
+            node[name] = newValue;
+            if (newValue == null) node.removeAttribute(name);
+          }
         }
       };
     } else if (name in Intent.attributes) {

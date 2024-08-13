@@ -1,6 +1,6 @@
 {
   "name": "moderntemplate",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Fast & Light Virtual DOM Alternative",
   "type": "module",
   "module": "src/index.js",
@@ -34,11 +34,11 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "c8": "^8.0.1",
-    "chai": "^4.3.10",
-    "jsdom": "^22.1.0",
-    "mocha": "^10.2.0",
-    "rollup": "4.2.0"
+    "c8": "^10.1.2",
+    "chai": "^5.1.1",
+    "jsdom": "^24.1.1",
+    "mocha": "^10.7.3",
+    "rollup": "4.20.0"
   },
   "mocha": {
     "ui": "bdd",
