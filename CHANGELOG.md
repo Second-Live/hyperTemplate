@@ -1,5 +1,9 @@
 # hyperTemplate Changelog
 
+## v1.0.4
+
+fix: Reuse the same child Node to diffrent parent nodes
+
 ## v1.0.3
 
 fix: Remove old Edge specific fix which set empty string on property in case of null

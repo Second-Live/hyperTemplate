@@ -1129,4 +1129,21 @@ describe("hyper", function () {
       "a-scene"
     );
   });
+
+  it("Should move the same child to diffrents parent", function () {
+    const childObj = {};
+    const obj = {};
+    const func = (obj) => {
+      const child = hyperHTML.wire(childObj)`<a-scene></a-scene>`;
+      return hyperHTML.wire(obj)`<b>${child}</b>`;
+    };
+    func(obj);
+    func({});
+
+    const output = func(obj);
+    expect(
+      output.firstElementChild.nodeName.toLowerCase(),
+      "correct element"
+    ).to.equal("a-scene");
+  });
 });

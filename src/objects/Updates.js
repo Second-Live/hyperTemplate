@@ -172,6 +172,7 @@ Tagger.prototype = {
     let fastPath = false;
     let oldValue;
     const anyContent = (value) => {
+      childNodes = childNodes.filter((n) => n.parentNode === node.parentNode);
       switch (typeof value) {
         case "string":
         case "number":
